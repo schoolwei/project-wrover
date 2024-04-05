@@ -69,7 +69,7 @@ private:
 
         if (writePromise != nullptr)
         {
-            if (data != lastWriteValue)
+            if (data != 101)
             {
                 LOG_WARN("TX ack mismatch: " + String((int)data) + " != " + String((int)lastWriteValue) + " parityOk: " + String(parityOk));
             }

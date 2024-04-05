@@ -33,7 +33,9 @@ serial_init:
 	ldi r16, (1 << RXEN) | (1 << TXEN) | (1 << RXCIE)
 	out UCSRB, r16
 
-	ldi r16, (1 << URSEL) | (1 << UPM1) | (1 << UPM0) | (1 << UCSZ1) | (1 << UCSZ0) ; even parity, 8-bit
+	ldi r16, (1 << URSEL) | (1 << UPM1) | (1 << UPM0) | \ ; odd parity
+			 (1 << UCSZ2) | (1 << UCSZ1) | (1 << UCSZ0) ; 9-bit
+
 	out UCSRC, r16
 
     clr r16
@@ -70,12 +72,34 @@ serial_write:
 	sei
 	ret
 
+serial_parity2:
+	push r17
+	mov r17, r16
+
+	lsr r17
+	lsr r17
+	lsr r17 ; R16: 76543210
+	lsr r17 ; R17: ****7654
+
+	eor r16, r17
+	mov r17, r16
+
+	lsr r17 ; R16: ****7654
+	lsr r17 ; R17: ******76
+
+	eor r16, r17
+	andi r16, 1
+
+	pop r17
+	ret
+
 serial_update:
 	cli
 	sbis UCSRA, UDRE
 	rjmp serial_update_ret ; data register busy
     push XL
     push XH
+	push r16
 
 	lds XH, SERIAL_WRITING_H
 	cpi XH, 0
@@ -106,7 +130,14 @@ serial_update_write_start:
 	sbis UCSRA, UDRE
 	rjmp serial_update_write_start
 
-    ld XH, X
+	ld XH, X
+	ld r16, XH
+	rcall serial_parity2
+
+	cbi UCSRB, TXB8
+	sbrc r16, 0
+	sbi UCSRB, TXB8
+    
 	out UDR, XH
 	ldi XH, high(SERIAL_WRITING_START)
 	sts SERIAL_WRITING_H, XH
@@ -114,6 +145,7 @@ serial_update_write_start:
 	sts SERIAL_WRITING_L, XH
 	
 serial_update_end:
+	pop r16
     pop XH
     pop XL
 serial_update_ret:
@@ -159,27 +191,37 @@ serial_rxc:
 	push XL
 	push XH
 	push r16
+	push r17
 
 	lds r16, SERIAL_WRITING_H
 	cpi r16, 0
 	brne serial_rxc_feedback
 	
+	in XL, UCSRA
+	andi XL, (1 << FE) | (1 << PE)
+	in XH, UCSRB
+	andi XH, (1 << RXB8)
+	lsr XH ; RXB8@1 -> RXB8@0
+	in r17, UDR
+
+	cpi XL, 0
+	brne serial_rxc_err
+
+	mov r16, r17
+	rcall serial_parity2
+	cp r16, XH
+	brne serial_rxc_err
+	
+serial_rxc_ok:
+
 	lds XL, SERIAL_RX_HEAD
 	andi XL, 0x7F
 	clr XH
-
 	subi XL, low(-SERIAL_RX_BUFFER)
 	sbci XH, high(-SERIAL_RX_BUFFER)
 
-	in r16, UCSRA
-	andi r16, (1 << FE) | (1 << PE)
-	brne serial_rxc_err
-
-serial_rxc_ok:
-	in r16, UDR
-	st X, r16
-	; ldi r16, SERIAL_ACK
-	out UDR, r16
+	st X, r17
+	out UDR, r17
 
 	lds r16, SERIAL_RX_HEAD
 	inc r16
@@ -187,14 +229,9 @@ serial_rxc_ok:
 	rjmp serial_rxc_end
 
 serial_rxc_err:
-	in r16, UDR
-	ldi r16, 210
-	out UDR, r16
 	rjmp serial_rxc_end
 
 serial_rxc_feedback:
-	in r16, UCSRA
-	in r16, UDR
 	clr r16
 	sts SERIAL_WRITING_H, r16
 	sts SERIAL_WRITING_L, r16
@@ -203,6 +240,7 @@ serial_rxc_feedback:
 	sts SERIAL_TX_TAIL, r16
 
 serial_rxc_end:
+	pop r17
 	pop r16
 	pop XH
 	pop XL

@@ -97,8 +97,8 @@ void sonarUpdate()
     };
 
     avrSonar(MODE_SONAR0)->finally(closure0);
-    avrSonar(MODE_SONAR1)->finally(closure1);
-    avrSonar(MODE_SONAR2)->finally(closure2);
+    // avrSonar(MODE_SONAR1)->finally(closure1);
+    // avrSonar(MODE_SONAR2)->finally(closure2);
 }
 
 void motorUpdate()

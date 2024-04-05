@@ -1,3 +1,4 @@
+#define CONFIG_ASYNC_TCP_RUNNING_CORE 0
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
