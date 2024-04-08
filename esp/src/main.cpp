@@ -64,7 +64,6 @@ void setup()
   setCpuFrequencyMhz(240);
 
   Serial.begin(115200);
-  EEPROM.begin(STORAGE_SIZE);
 
   LOG_INFO("Starting AVR serial...");
 
@@ -80,11 +79,6 @@ void setup()
   cameraSetup();
   webServerSetup();
   hallSensorSetup();
-
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect();
-
-  lastStatus = WiFi.status();
 
   sleepUpdate(1000);
 

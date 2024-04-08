@@ -3,7 +3,10 @@
 #include <esp_camera.h>
 
 #include "channel.h"
-#include "globals.h"
+#include "web_server.h"
+
+uint32_t camSocketId = NO_SOCKET_ID;
+int cameraFps = 24;
 
 void cameraCapture()
 {

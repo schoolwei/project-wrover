@@ -6,12 +6,22 @@
 #include "channel.h"
 #include "data_utils.h"
 
+#define WIFI_STORAGE_SIZE 2048
+
+void wifiSetup()
+{
+  EEPROM.begin(WIFI_STORAGE_SIZE);
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  lastStatus = WiFi.status();
+}
+
 void connect(Channel &chan, JsonDocument &request)
 {
   String ssid = request["ssid"];
   String auth = request["auth"];
 
-  EepromStream eepromStream(0, STORAGE_SIZE);
+  EepromStream eepromStream(0, WIFI_STORAGE_SIZE);
   serializeJson(request, eepromStream);
   eepromStream.flush();
 
@@ -53,7 +63,7 @@ void disconnect(Channel &chan)
 {
   WiFi.disconnect();
   JsonDocument empty;
-  EepromStream eepromStream(0, STORAGE_SIZE);
+  EepromStream eepromStream(0, WIFI_STORAGE_SIZE);
   serializeJson(empty, eepromStream);
   eepromStream.flush();
   sendData(chan, "disconnect", "ok");
@@ -63,7 +73,7 @@ void autoConnect()
 {
   avrClear();
   JsonDocument connectJson;
-  EepromStream eepromStream(0, STORAGE_SIZE);
+  EepromStream eepromStream(0, WIFI_STORAGE_SIZE);
   DeserializationError error = deserializeJson(connectJson, eepromStream);
   if (!error && connectJson["type"] == "connect")
   {

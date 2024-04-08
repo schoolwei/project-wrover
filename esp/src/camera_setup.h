@@ -5,6 +5,8 @@
 
 #include "globals.h"
 
+bool cameraOk = false;
+
 void cameraSetup()
 {
   camera_config_t config;

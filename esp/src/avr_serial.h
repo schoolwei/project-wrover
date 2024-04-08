@@ -1,7 +1,16 @@
 #pragma once
 #include <Arduino.h>
+#include <SoftwareSerial.h>
 
-#include "globals.h"
+#include "async_serial.h"
+#include "logger.h"
+
+#define AVR_SERIAL_TIMEOUT 100
+#define AVR_RX GPIO_NUM_33
+#define AVR_TX GPIO_NUM_14
+
+SoftwareSerial avrSerialBase;
+AsyncSerial avrSerial(avrSerialBase, AVR_SERIAL_TIMEOUT, 0, true);
 
 enum AvrMode
 {

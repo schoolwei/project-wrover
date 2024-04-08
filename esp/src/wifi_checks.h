@@ -3,10 +3,13 @@
 #include <ArduinoJson.h>
 
 #include "avr_serial.h"
-#include "begin_webserver.h"
 #include "data_utils.h"
 #include "globals.h"
+#include "web_server.h"
 #include "wifi_connection.h"
+
+bool scanRequested = false;
+wl_status_t lastStatus;
 
 void checkScanComplete()
 {

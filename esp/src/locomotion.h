@@ -4,12 +4,17 @@
 #include "avr_serial.h"
 #include "channel.h"
 #include "data_utils.h"
+#include "dual_odometer.h"
 #include "globals.h"
 
+#define HALL0 GPIO_NUM_32
+#define HALL1 GPIO_NUM_13
+#define HALL_SIZE 2024
+#define SONAR_ARRAY_SIZE 5
+
+DualOdometer odometer(15, 0.043);
 int8_t motor0Speed = 0;
 int8_t motor1Speed = 0;
-
-#define SONAR_ARRAY_SIZE 5
 
 uint16_t sonar0Average = 0;
 uint16_t sonar1Average = 0;

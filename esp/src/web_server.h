@@ -1,9 +1,26 @@
 #pragma once
+#include <ESPAsyncWebServer.h>
+
 #include <memory>
 
 #include "channel.h"
 #include "globals.h"
 #include "handle_request.h"
+#include "message_queue.h"
+
+MessageQueue messageQueue;
+AsyncWebServer webServer(80);
+AsyncWebSocket wsEndpoint("/ws");
+bool webServerActive = false;
+
+void beginWebServer(Channel &chan)
+{
+  if (webServerActive)
+    return;
+  webServer.begin();
+  sendData(chan, "begin", "ok");
+  webServerActive = true;
+}
 
 void onWSEventData(AwsFrameInfo *info, AsyncWebSocketClient *client, uint8_t *data, size_t len)
 {
