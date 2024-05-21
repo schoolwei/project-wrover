@@ -13,6 +13,8 @@ COPY tsconfig.json postcss.config.js tailwind.config.ts ./
 COPY next.docker.config.mjs next.config.mjs
 RUN npm run build
 
+RUN ls -la build
+
 FROM httpd:2.4-alpine
 
 WORKDIR /app
